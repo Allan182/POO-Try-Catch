@@ -9,6 +9,7 @@ export class FiguraGeometrica {
         this.#id = id;
     }
 
+    
     get tipo() {
         return this.#tipo;
     }
