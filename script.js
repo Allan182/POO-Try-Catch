@@ -3,7 +3,7 @@ import { NumberIsInteger, MedidasInvalidas, InvalidNumberPoints } from "./Error.
 import { Ponto } from "./Ponto.js"
 
 let vetPontos = [];     // Vetor com todos os pontos;
-let vetPonto = [];      // Vet com o ponto especifico inserido na tela do usuario;
+let novoPonto;
 let figurasGeometricas = [];    // Vet com todas os objetos instanciados da classe figurasGeometricas;
 
 const select = document.getElementById("select");     // resgate select;
@@ -22,8 +22,8 @@ let error = "";
 function adicionaPonto(x, y) {
 
     if (Number.isInteger(x) && Number.isInteger(y)) {
-        vetPonto = new Ponto(x, y);
-        vetPontos.push(vetPonto);
+        novoPonto = new Ponto(x, y);
+        vetPontos.push(novoPonto);
         return vetPontos;
     } else {
         throw new NumberIsInteger();
@@ -50,51 +50,43 @@ function salvarFigura() {
 
     let selectedOption = select.options[select.selectedIndex];  // resgata opção marcada no select;
     let selectedValue = selectedOption.value; // pega o conteudo da opção marcada no select;
-    let tipo = "";
-
-    if (selectedValue == "triangulo") {
-        tipo = "triangulo";
-    } else if (selectedValue == "retangulo") {
-        tipo = "retangulo"
-    } else {
-        tipo = "estrela";
-    }
 
 
-    var figuraGeo = new FiguraGeometrica(tipo, vetPontos, id);
-    figurasGeometricas.push(figuraGeo); 
+    let figuraGeo = new FiguraGeometrica(selectedValue, vetPontos, id);
+    figurasGeometricas.push(figuraGeo);
 
 
     obtemID();      // Atualiza ID;
     vetPontos = []; // Limpa Vetor de Pontos;
-    console.log(figuraGeo);
+    console.log(figurasGeometricas);
+    return figuraGeo;
 }
 btSalvarFigura.addEventListener("click", () => {
-
+    let i;
     try {
-        salvarFigura();
-        //   i = verificaPonto();
-        //  i = verificaFigura();
+        let figuraGeo = salvarFigura();
+        i = verificaFiguraFechada(figuraGeo);
+        i = verificaTipoFigura(figuraGeo);
 
     } catch (e) {
         error = e;
-    }
-    finally {
         console.log(error);
     }
 
+
 });
-
-
 
 function obtemID() {
     textInput.value = ++id;
 };
 
 
-function verificaPonto() {
+function verificaFiguraFechada(figura) {
+    let pontoInicial = figura.vetPontos[0];
+    let pontoFinal = figura.vetPontos[figura.vetPontos.length - 1];
 
-    if (vetPontos.length >= 2 && vetPontos[0].pontoX == vetPontos[vetPontos.length - 1].pontoX && vetPontos[0].pontoY == vetPontos[vetPontos.length - 1].pontoY)
+
+    if (pontoInicial.pontoX == pontoFinal.pontoX && pontoInicial.pontoY == pontoFinal.pontoY)
         return true;
     else {
         throw new MedidasInvalidas();
@@ -102,7 +94,11 @@ function verificaPonto() {
 }
 
 
-function verificaFigura() {
+function verificaTipoFigura(figura) {
+    let selectedOption = select.options[select.selectedIndex];  // resgata opção marcada no select;
+    let selectedValue = selectedOption.value; // pega o conteudo da opção marcada no select;
+
+    let vetPontos = figura.vetPontos;
 
     if (selectedValue == "triangulo" && vetPontos.length == 4) {
         return true;
