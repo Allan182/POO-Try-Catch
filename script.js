@@ -2,27 +2,27 @@ import { FiguraGeometrica } from "./FiguraGeometrica.js";
 import { NumberIsInteger, MedidasInvalidas, InvalidNumberPoints } from "./Error.js";
 import { Ponto } from "./Ponto.js"
 
-let vetPontos = [];     // Vetor com todos os pontos;
-let novoPonto;
-let figurasGeometricas = [];    // Vet com todas os objetos instanciados da classe figurasGeometricas;
+let vetPontos = [];   // Vetor com todos os pontos;
+let figurasGeometricas = []; // Vetor com Todas as Figuras;
+
 
 const select = document.getElementById("select");     // resgate select;
-const pontoX = document.getElementById("pontoX");     // resgate input sobre o ponto X;
-const pontoY = document.getElementById("pontoY");     // resgate input sobre o ponto y;
+let pontoX = document.getElementById("pontoX");     // resgate input sobre o ponto X;
+let pontoY = document.getElementById("pontoY");     // resgate input sobre o ponto y;
 const textInput = document.getElementById("textInput");   // resgate input sobre o ponto o identificador;
 const btSalvarFigura = document.getElementById("bt-salvar-figura"); // resgate button sobre Salvar Figura;
 const btSalvarPontos = document.getElementById("bt-cadastro-pontos"); // resgate button sobre Salvar Pontos;
 
-
 let id = 0;     // ID dinâmico iniciado em 0
-obtemID();  // Chama a função para começar o ID em 1
-let error = "";
+obtemID();  // Chama a função para incrementar o ID e começar em 1;
+
+
 
 
 function adicionaPonto(x, y) {
 
     if (Number.isInteger(x) && Number.isInteger(y)) {
-        novoPonto = new Ponto(x, y);
+        let novoPonto = new Ponto(x, y);
         vetPontos.push(novoPonto);
         return vetPontos;
     } else {
@@ -31,9 +31,10 @@ function adicionaPonto(x, y) {
 }
 btSalvarPontos.addEventListener("click", () => {
 
-    var x = Number(pontoX.value);
-    var y = Number(pontoY.value);
+    let x = Number(pontoX.value);
+    let y = Number(pontoY.value);
 
+    let error;
     try {
         error = adicionaPonto(x, y);
     } catch (e) {
@@ -44,29 +45,36 @@ btSalvarPontos.addEventListener("click", () => {
     }
 });
 
+function limpaPontos() {
+    vetPontos = [];
+}
 
+function salvarFigura(tipo) {
 
-function salvarFigura() {
+    if (vetPontos.length >= 4) {
 
-    let selectedOption = select.options[select.selectedIndex];  // resgata opção marcada no select;
-    let selectedValue = selectedOption.value; // pega o conteudo da opção marcada no select;
+        let figuraGeo = new FiguraGeometrica(tipo, vetPontos, id);
+        figurasGeometricas.push(figuraGeo);
 
-
-    let figuraGeo = new FiguraGeometrica(selectedValue, vetPontos, id);
-    figurasGeometricas.push(figuraGeo);
-
-
-    obtemID();      // Atualiza ID;
-    vetPontos = []; // Limpa Vetor de Pontos;
-    console.log(figurasGeometricas);
-    return figuraGeo;
+        if (verificaFiguraFechada(figuraGeo) == true) { // Só apresenta a figura no console caso a figura seja fechada. Não apresentando informações desnecessárias, como uma figura invalida.
+            console.log(figurasGeometricas);
+        }
+        obtemID();      // Atualiza ID;
+        limpaPontos(); // Limpa Vetor de Pontos;
+        
+        return figuraGeo;
+    } else {
+        limpaPontos(); // Limpa Vetor de Pontos;
+        throw new InvalidNumberPoints();
+    }
 }
 btSalvarFigura.addEventListener("click", () => {
-    let i;
+    let error;
     try {
-        let figuraGeo = salvarFigura();
-        i = verificaFiguraFechada(figuraGeo);
-        i = verificaTipoFigura(figuraGeo);
+        let tipoFigura = obterTipo(); // Obtem o tipo, seja triangulo estrela ou retangulo para ser usado como parametro
+        let figuraGeo = salvarFigura(tipoFigura);   // armazena a figuraGeometrica Salva.
+        verificaFiguraFechada(figuraGeo);       // Verifica se a figura geometrica Salva
+        verificaTipoFigura(figuraGeo, tipoFigura);
 
     } catch (e) {
         error = e;
@@ -76,15 +84,11 @@ btSalvarFigura.addEventListener("click", () => {
 
 });
 
-function obtemID() {
-    textInput.value = ++id;
-};
-
 
 function verificaFiguraFechada(figura) {
+
     let pontoInicial = figura.vetPontos[0];
     let pontoFinal = figura.vetPontos[figura.vetPontos.length - 1];
-
 
     if (pontoInicial.pontoX == pontoFinal.pontoX && pontoInicial.pontoY == pontoFinal.pontoY)
         return true;
@@ -93,21 +97,27 @@ function verificaFiguraFechada(figura) {
     }
 }
 
-
-function verificaTipoFigura(figura) {
-    let selectedOption = select.options[select.selectedIndex];  // resgata opção marcada no select;
-    let selectedValue = selectedOption.value; // pega o conteudo da opção marcada no select;
+function verificaTipoFigura(figura, tipoFigura) {
 
     let vetPontos = figura.vetPontos;
 
-    if (selectedValue == "triangulo" && vetPontos.length == 4) {
+    if (tipoFigura == "triangulo" && vetPontos.length == 4) {
         return true;
-    } else if (selectedValue == "retangulo" && vetPontos.length == 5) {
+    } else if (tipoFigura == "retangulo" && vetPontos.length == 5) {
         return true;
-    } else if (selectedValue == "estrela" && vetPontos.length == 6) {
+    } else if (tipoFigura == "estrela" && vetPontos.length == 6) {
         return true;
     } else {
         throw new InvalidNumberPoints();
     }
-
 }
+
+function obterTipo() {
+    let selectedOption = select.options[select.selectedIndex];  // resgata opção marcada no select;
+    let selectedValue = selectedOption.value; // pega o conteudo da opção marcada no select;
+    return selectedValue;   // retorna o valor do select.
+}
+
+function obtemID() {
+    textInput.value = ++id;
+};

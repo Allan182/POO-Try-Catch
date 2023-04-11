@@ -22,6 +22,6 @@ export class MedidasInvalidas extends Error {
 export class InvalidNumberPoints extends Error {
     constructor(message) {
         super(message);
-        this.name = "Error! O número de pontos não coincide com o tamanho da Figura !!!";
+        this.name = "Error! Número de Pontos Invalidos !!!";
     }
 }
