@@ -10,6 +10,7 @@ export class Ponto {
         return this.#pontoX;
     }
 
+    
     get pontoY() {
         return this.#pontoY;
     }
